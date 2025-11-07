@@ -3,23 +3,52 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quản lý người dùng - React CRUD</title>
   
   <!-- React, ReactDOM, Babel CDN -->
   <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 1200px;
+      margin: 20px auto;
+      padding: 20px;
+    }
+    .search-container {
+      margin: 20px 0;
+    }
+    .search-input {
+      width: 100%;
+      padding: 10px;
+      font-size: 16px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+    .search-input:focus {
+      outline: none;
+      border-color: #4CAF50;
+    }
+  </style>
 </head>
 <body>
   <div id="root"></div>
 
   <script type="text/babel">
     // Component SearchForm - Nhận input từ người dùng để tìm kiếm
-    function SearchForm({ onChangeValue }) {
+    // Logic: SearchForm nhận hàm onChangeValue (tức là setKeyword từ App)
+    // Sử dụng sự kiện onChange để kích hoạt hàm callback, cập nhật kw ở App
+    function SearchForm({ onChangeValue, value }) {
       return (
-        <div>
+        <div className="search-container">
           <input
             type="text"
+            className="search-input"
             placeholder="Tìm theo name, username"
+            value={value}
             onChange={(e) => onChangeValue(e.target.value)}
           />
         </div>
@@ -57,8 +86,9 @@
         <div>
           <h1>Quản lý người dùng</h1>
           
-          {/* SearchForm: Truyền hàm setKeyword xuống component con */}
-          <SearchForm onChangeValue={setKeyword} />
+          {/* SearchForm: Truyền hàm setKeyword và giá trị kw xuống component con */}
+          {/* Khi người dùng nhập, App cập nhật kw, và ResultTable tự lọc lại danh sách qua keyword */}
+          <SearchForm onChangeValue={setKeyword} value={kw} />
           
           {/* AddUser: Truyền hàm setNewUser xuống component con */}
           <AddUser onAdd={setNewUser} />
