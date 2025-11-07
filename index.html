@@ -35,9 +35,197 @@
 
     // Component AddUser - Form thêm người dùng mới
     function AddUser({ onAdd }) {
+      // State để quản lý việc hiển thị form (ẩn/hiện)
+      const [adding, setAdding] = React.useState(false);
+      
+      // State để lưu trữ dữ liệu form
+      // Sử dụng nested object cho address (state lồng nhau)
+      const [user, setUser] = React.useState({
+        name: "",
+        username: "",
+        email: "",
+        address: {
+          street: "",
+          suite: "",
+          city: ""
+        },
+        phone: "",
+        website: ""
+      });
+
+      // Xử lý thay đổi input - dùng Spread Operator để cập nhật nested state (address)
+      const handleChange = (e) => {
+        const { id, value } = e.target;
+        
+        // Kiểm tra nếu field thuộc address (nested state)
+        if (["street", "suite", "city"].includes(id)) {
+          setUser({
+            ...user,  // Sao chép toàn bộ user object
+            address: {
+              ...user.address,  // Sao chép toàn bộ address object
+              [id]: value  // Cập nhật field cụ thể
+            }
+          });
+        } else {
+          // Field thuộc user trực tiếp
+          setUser({
+            ...user,  // Sao chép toàn bộ user object
+            [id]: value  // Cập nhật field cụ thể
+          });
+        }
+      };
+
+      const handleAdd = () => {
+        // Validation: Kiểm tra name và username có giá trị
+        if (user.name === "" || user.username === "") {
+          alert("Vui lòng nhập Name và Username!");
+          return;
+        }
+        
+        // Truyền dữ liệu lên component cha (App)
+        onAdd(user);
+        
+        // Reset form về giá trị ban đầu
+        setUser({
+          name: "",
+          username: "",
+          email: "",
+          address: {
+            street: "",
+            suite: "",
+            city: ""
+          },
+          phone: "",
+          website: ""
+        });
+        
+        // Ẩn form
+        setAdding(false);
+      };
+
       return (
-        <div>
-          <h3>Thêm người dùng</h3>
+        <div className="form-container">
+          <div className="form-header">
+            <h3>Thêm người dùng</h3>
+            {!adding && (
+              <button className="btn-add" onClick={() => setAdding(true)}>
+                Thêm
+              </button>
+            )}
+          </div>
+          
+          {/* Hiển thị form khi adding = true */}
+          {adding && (
+            <div>
+              <div className="form-grid">
+                {/* Name field */}
+                <div className="form-group">
+                  <label htmlFor="name">Name: *</label>
+                  <input
+                    id="name"
+                    type="text"
+                    value={user.name}
+                    onChange={handleChange}
+                    placeholder="Nhập tên"
+                  />
+                </div>
+                
+                {/* Username field */}
+                <div className="form-group">
+                  <label htmlFor="username">Username: *</label>
+                  <input
+                    id="username"
+                    type="text"
+                    value={user.username}
+                    onChange={handleChange}
+                    placeholder="Nhập username"
+                  />
+                </div>
+                
+                {/* Email field */}
+                <div className="form-group">
+                  <label htmlFor="email">Email:</label>
+                  <input
+                    id="email"
+                    type="email"
+                    value={user.email}
+                    onChange={handleChange}
+                    placeholder="Nhập email"
+                  />
+                </div>
+                
+                {/* Phone field */}
+                <div className="form-group">
+                  <label htmlFor="phone">Phone:</label>
+                  <input
+                    id="phone"
+                    type="text"
+                    value={user.phone}
+                    onChange={handleChange}
+                    placeholder="Nhập số điện thoại"
+                  />
+                </div>
+                
+                {/* Address - Street */}
+                <div className="form-group">
+                  <label htmlFor="street">Street:</label>
+                  <input
+                    id="street"
+                    type="text"
+                    value={user.address.street}
+                    onChange={handleChange}
+                    placeholder="Nhập đường"
+                  />
+                </div>
+                
+                {/* Address - Suite */}
+                <div className="form-group">
+                  <label htmlFor="suite">Suite:</label>
+                  <input
+                    id="suite"
+                    type="text"
+                    value={user.address.suite}
+                    onChange={handleChange}
+                    placeholder="Nhập suite"
+                  />
+                </div>
+                
+                {/* Address - City */}
+                <div className="form-group">
+                  <label htmlFor="city">City:</label>
+                  <input
+                    id="city"
+                    type="text"
+                    value={user.address.city}
+                    onChange={handleChange}
+                    placeholder="Nhập thành phố"
+                  />
+                </div>
+                
+                {/* Website field */}
+                <div className="form-group">
+                  <label htmlFor="website">Website:</label>
+                  <input
+                    id="website"
+                    type="text"
+                    value={user.website}
+                    onChange={handleChange}
+                    placeholder="Nhập website"
+                  />
+                </div>
+              </div>
+              
+              {/* Form actions */}
+              <div className="form-actions">
+                <button className="btn-submit" onClick={handleAdd}>
+                  Thêm người dùng
+                </button>
+                <button className="btn-cancel" onClick={() => setAdding(false)}>
+                  Hủy
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       );
     }
@@ -65,6 +253,28 @@
             setLoading(false);      // Tắt loading ngay cả khi có lỗi
           });
       }, []); // [] = chỉ chạy 1 lần khi component mount
+
+      React.useEffect(() => {
+        if (user) {
+          // Thêm user mới vào danh sách với ID mới
+          setUsers((prev) => {
+            // Tính ID mới: Lấy ID lớn nhất trong danh sách + 1
+            // Nếu danh sách rỗng, ID = 1
+            const maxId = prev.length > 0 
+              ? Math.max(...prev.map(u => u.id)) 
+              : 0;
+            const newId = maxId + 1;
+            
+            return [
+              ...prev,  // Sao chép toàn bộ users hiện tại
+              { ...user, id: newId }  // Thêm user mới với ID mới
+            ];
+          });
+          
+          // Reset state newUser trong App về null
+          onAdded();
+        }
+      }, [user]); // Chạy lại mỗi khi user thay đổi
 
       // Lọc danh sách theo keyword
       const filteredUsers = users.filter(
