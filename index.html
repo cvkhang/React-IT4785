@@ -13,11 +13,62 @@
   <div id="root"></div>
 
   <script type="text/babel">
-    // Component gốc App
+    // Component SearchForm - Nhận input từ người dùng để tìm kiếm
+    function SearchForm({ onChangeValue }) {
+      return (
+        <div>
+          <input
+            type="text"
+            placeholder="Tìm theo name, username"
+            onChange={(e) => onChangeValue(e.target.value)}
+          />
+        </div>
+      );
+    }
+
+    // Component AddUser - Form thêm người dùng mới
+    function AddUser({ onAdd }) {
+      return (
+        <div>
+          <h3>Thêm người dùng</h3>
+        </div>
+      );
+    }
+
+    // Component ResultTable - Hiển thị, lọc, sửa, xóa người dùng
+    function ResultTable({ keyword, user, onAdded }) {
+      return (
+        <div>
+          <h3>Danh sách người dùng</h3>
+          <p>Keyword: {keyword}</p>
+        </div>
+      );
+    }
+
+    // Component gốc App - Quản lý toàn bộ state và truyền props xuống con
     function App() {
+      // State tập trung: keyword tìm kiếm
+      const [kw, setKeyword] = React.useState("");
+      
+      // State tập trung: người dùng mới
+      const [newUser, setNewUser] = React.useState(null);
+
       return (
         <div>
           <h1>Quản lý người dùng</h1>
+          
+          {/* SearchForm: Truyền hàm setKeyword xuống component con */}
+          <SearchForm onChangeValue={setKeyword} />
+          
+          {/* AddUser: Truyền hàm setNewUser xuống component con */}
+          <AddUser onAdd={setNewUser} />
+          
+          {/* ResultTable: Truyền keyword, user mới, và hàm reset user xuống */}
+          <ResultTable 
+            keyword={kw} 
+            user={newUser} 
+            onAdded={() => setNewUser(null)} 
+          />
         </div>
       );
     }
