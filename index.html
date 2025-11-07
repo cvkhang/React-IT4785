@@ -239,6 +239,10 @@
       // State: Quản lý trạng thái loading
       // Khởi tạo với true (đang tải) → sẽ set false sau khi fetch xong
       const [loading, setLoading] = React.useState(true);
+      
+      // State: Lưu trữ user đang được sửa
+      // null = không có user nào đang được sửa
+      const [editing, setEditing] = React.useState(null);
 
       // Tải dữ liệu 1 lần khi component mount
       React.useEffect(() => {
@@ -283,6 +287,52 @@
           u.username.toLowerCase().includes(keyword.toLowerCase())
       );
 
+      // Hàm mở form sửa - Deep Copy user vào editing state
+      // Sao chép cả user và address để tránh thay đổi dữ liệu gốc
+      const editUser = (user) => {
+        setEditing({
+          ...user,  // Sao chép toàn bộ user object
+          address: { ...user.address }  // Deep copy address object
+        });
+      };
+
+      // Xử lý thay đổi input trong form sửa
+      const handleEditChange = (field, value) => {
+        if (field === "street" || field === "suite" || field === "city") {
+          // Field thuộc address (nested state)
+          setEditing({
+            ...editing,
+            address: {
+              ...editing.address,
+              [field]: value
+            }
+          });
+        } else {
+          // Field thuộc user trực tiếp
+          setEditing({
+            ...editing,
+            [field]: value
+          });
+        }
+      };
+
+      // Lưu thay đổi sau khi sửa
+      const saveUser = () => {
+        // Validation
+        if (editing.name === "" || editing.username === "") {
+          alert("Vui lòng nhập Name và Username!");
+          return;
+        }
+        
+        // Cập nhật user trong danh sách bằng Array.map()
+        setUsers(prev => prev.map(u => 
+          u.id === editing.id ? editing : u  // Thay thế user có id trùng với editing.id
+        ));
+        
+        // Đóng form sửa
+        setEditing(null);
+      };
+
       // Hiển thị loading
       if (loading) {
         return (
@@ -322,7 +372,7 @@
                   <td>
                     <button 
                       className="btn-edit" 
-                      onClick={() => alert("Chức năng Sửa")}
+                      onClick={() => editUser(u)}
                     >
                       Sửa
                     </button>
@@ -341,6 +391,126 @@
             <p style={{ textAlign: "center", padding: "20px", color: "#666" }}>
               Không tìm thấy người dùng nào với từ khóa "{keyword}"
             </p>
+          )}
+          
+          {/* Modal form sửa user */}
+          {editing && (
+            <div className="modal-overlay" onClick={() => setEditing(null)}>
+              <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                <div className="modal-header">
+                  <h4>Sửa người dùng</h4>
+                  <button className="btn-close" onClick={() => setEditing(null)}>×</button>
+                </div>
+                
+                <div className="form-grid">
+                  {/* Name field */}
+                  <div className="form-group">
+                    <label htmlFor="edit-name">Name: *</label>
+                    <input
+                      id="edit-name"
+                      type="text"
+                      value={editing.name}
+                      onChange={(e) => handleEditChange("name", e.target.value)}
+                      placeholder="Nhập tên"
+                    />
+                  </div>
+                  
+                  {/* Username field */}
+                  <div className="form-group">
+                    <label htmlFor="edit-username">Username: *</label>
+                    <input
+                      id="edit-username"
+                      type="text"
+                      value={editing.username}
+                      onChange={(e) => handleEditChange("username", e.target.value)}
+                      placeholder="Nhập username"
+                    />
+                  </div>
+                  
+                  {/* Email field */}
+                  <div className="form-group">
+                    <label htmlFor="edit-email">Email:</label>
+                    <input
+                      id="edit-email"
+                      type="email"
+                      value={editing.email}
+                      onChange={(e) => handleEditChange("email", e.target.value)}
+                      placeholder="Nhập email"
+                    />
+                  </div>
+                  
+                  {/* Phone field */}
+                  <div className="form-group">
+                    <label htmlFor="edit-phone">Phone:</label>
+                    <input
+                      id="edit-phone"
+                      type="text"
+                      value={editing.phone}
+                      onChange={(e) => handleEditChange("phone", e.target.value)}
+                      placeholder="Nhập số điện thoại"
+                    />
+                  </div>
+                  
+                  {/* Address - Street */}
+                  <div className="form-group">
+                    <label htmlFor="edit-street">Street:</label>
+                    <input
+                      id="edit-street"
+                      type="text"
+                      value={editing.address.street}
+                      onChange={(e) => handleEditChange("street", e.target.value)}
+                      placeholder="Nhập đường"
+                    />
+                  </div>
+                  
+                  {/* Address - Suite */}
+                  <div className="form-group">
+                    <label htmlFor="edit-suite">Suite:</label>
+                    <input
+                      id="edit-suite"
+                      type="text"
+                      value={editing.address.suite}
+                      onChange={(e) => handleEditChange("suite", e.target.value)}
+                      placeholder="Nhập suite"
+                    />
+                  </div>
+                  
+                  {/* Address - City */}
+                  <div className="form-group">
+                    <label htmlFor="edit-city">City:</label>
+                    <input
+                      id="edit-city"
+                      type="text"
+                      value={editing.address.city}
+                      onChange={(e) => handleEditChange("city", e.target.value)}
+                      placeholder="Nhập thành phố"
+                    />
+                  </div>
+                  
+                  {/* Website field */}
+                  <div className="form-group">
+                    <label htmlFor="edit-website">Website:</label>
+                    <input
+                      id="edit-website"
+                      type="text"
+                      value={editing.website}
+                      onChange={(e) => handleEditChange("website", e.target.value)}
+                      placeholder="Nhập website"
+                    />
+                  </div>
+                </div>
+                
+                {/* Form actions */}
+                <div className="form-actions">
+                  <button className="btn-submit" onClick={saveUser}>
+                    Lưu thay đổi
+                  </button>
+                  <button className="btn-cancel" onClick={() => setEditing(null)}>
+                    Hủy
+                  </button>
+                </div>
+              </div>
+            </div>
           )}
         </div>
       );
