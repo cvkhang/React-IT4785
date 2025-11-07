@@ -333,6 +333,14 @@
         setEditing(null);
       };
 
+      // Xóa người dùng khỏi danh sách
+      // Sử dụng Array.filter() để tạo mảng mới không chứa user có id cần xóa
+      // Giữ lại tất cả user có id khác với id cần xóa
+      const removeUser = (id) => {
+        // Sử dụng functional update: setUsers((prev) => ...)
+        setUsers((prev) => prev.filter((u) => u.id !== id));
+      };
+
       // Hiển thị loading
       if (loading) {
         return (
@@ -378,7 +386,7 @@
                     </button>
                     <button 
                       className="btn-delete" 
-                      onClick={() => alert("Chức năng Xóa")}
+                      onClick={() => removeUser(u.id)}
                     >
                       Xóa
                     </button>
